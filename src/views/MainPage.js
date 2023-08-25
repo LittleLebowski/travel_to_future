@@ -1,5 +1,5 @@
 //React
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 //MUI
 import { Box, Paper, Stack } from "@mui/material";
 //Componenets
