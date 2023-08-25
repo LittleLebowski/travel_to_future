@@ -1,11 +1,9 @@
 //MUI
-import { Box, IconButton, Stack } from "@mui/material";
+import { Box, Stack } from "@mui/material";
 //React
 import React, { useCallback, useState, useEffect } from "react";
 //Components
 import LocationAutocomplite from "../components/LocationAutocomplete";
-//Icon
-import SyncAltTwoToneIcon from "@mui/icons-material/SyncAltTwoTone";
 //Third-Party
 import axios from "axios";
 import _ from "lodash";
@@ -43,52 +41,25 @@ const LocationBox = ({ handleTripRoute }) => {
       });
   }, []);
 
-  const getDestinationData = useCallback(
-    (locationFromId, isSwitch = false, switchId = null) => {
-      setDestinationDataLoading(true);
+  const getDestinationData = useCallback((locationFromId) => {
+    setDestinationDataLoading(true);
 
-      let landinApiUrl = `https://dummyflightdata-default-rtdb.europe-west1.firebasedatabase.app/flights/${locationFromId}.json`;
+    let landinApiUrl = `https://dummyflightdata-default-rtdb.europe-west1.firebasedatabase.app/flights/${locationFromId}.json`;
 
-      axios
-        .get(landinApiUrl)
-        .then((resp) => {
-          const tmpDestinationData = resp.data.destinationFlights;
-          setDestinationData(tmpDestinationData);
-
-          if (isSwitch) {
-            const tmpLocationTo = tmpDestinationData.find(
-              (item) => item.id === switchId
-            );
-            setLandingLocation(tmpLocationTo ?? null);
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching data:", error);
-        })
-        .finally(() => {
-          setDestinationDataLoading(false);
-        });
-    },
-    []
-  );
-
-  const handleSwitchContent = useCallback(() => {
-    const departureLocationId = landingLocation?.id;
-    const landingLocationId = departureLocation?.id;
-
-    handleTripRoute(DEPARTURE, landingLocation);
-    handleTripRoute(LANDING, departureLocation);
-
-    getDestinationData(departureLocationId, true, landingLocationId);
-
-    setDepartureLocation(departureData[departureLocationId]);
-  }, [
-    departureData,
-    landingLocation,
-    departureLocation,
-    getDestinationData,
-    handleTripRoute,
-  ]);
+    axios
+      .get(landinApiUrl)
+      .then((resp) => {
+        setLandingLocation(null);
+        const tmpDestinationData = resp.data.destinationFlights;
+        setDestinationData(tmpDestinationData);
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+      })
+      .finally(() => {
+        setDestinationDataLoading(false);
+      });
+  }, []);
 
   const handleDepartureLocationChange = useCallback(
     (value) => {
@@ -102,6 +73,10 @@ const LocationBox = ({ handleTripRoute }) => {
   const handleDestinationLocationChange = useCallback(
     (value) => {
       handleTripRoute(LANDING, value);
+      // let tmpDeparture = departureLocation.destinationFlights.find(
+      //   (item) => item.id === value.id
+      // );
+      // handleTripRoute(DEPARTURE, tmpDeparture);
       setLandingLocation(value);
     },
     [handleTripRoute]
@@ -124,20 +99,6 @@ const LocationBox = ({ handleTripRoute }) => {
           label={"From"}
           dataLoading={departureDataLoading}
         />
-      </Box>
-      <Box
-        sx={{
-          borderRadius: "50%",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <IconButton
-          disabled={_.isEmpty(landingLocation)}
-          onClick={handleSwitchContent}
-        >
-          <SyncAltTwoToneIcon />
-        </IconButton>
       </Box>
       <Box flex={1}>
         <LocationAutocomplite

@@ -1,5 +1,5 @@
 //React
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 //MUI
 import { Button, Card, Paper, Stack, Typography } from "@mui/material";
 //Componenets
@@ -11,10 +11,13 @@ import DateBox from "./DateBox";
 import axios from "axios";
 import _ from "lodash";
 //Enums
-import { locationEnumsMap } from "../enums/locationEnums";
+// import { locationEnumsMap } from "../enums/locationEnums";
+// import { DEPARTURE, RETURN } from "../enums/datePickerEnums";
 
 function MainPage() {
   const [hasReturnTrip, setHasReturnTrip] = useState(true);
+  const [showList, setShowList] = useState(false);
+  const [selectedItem, setSelectedItem] = useState([]);
 
   const [tripRoute, setTripRoute] = useState({ departure: "", landing: "" });
 
@@ -25,57 +28,89 @@ function MainPage() {
 
   const [flightOptions, setFlightOptions] = useState();
 
-  const [cardData, setCardData] = useState();
-
   const handleDateChange = useCallback((key, value) => {
     setDepartureReturnDate((prevState) => ({ ...prevState, [key]: value }));
   }, []);
 
   const handleTripTypeChange = useCallback((v) => {
+    //On trip type change reset return date and close list
     setHasReturnTrip(!!v);
+    setShowList(false);
+    setDepartureReturnDate((prevState) => ({ ...prevState, return: "" }));
   }, []);
 
   const handleTripRoute = useCallback((key, value) => {
     setTripRoute((prevState) => ({ ...prevState, [key]: value }));
   }, []);
 
-  const handleCardData = useCallback((tripRoutes, date) => {
-    setCardData({
-      originLocation: tripRoutes.departure.id,
-      destinationLocation: tripRoutes.landing.id,
-      destinationAirPort: tripRoutes.landing.destinationAirport,
-      date: date,
-    });
-  }, []);
-
-  const getFilteredFlightItems = useCallback(
-    (dates, tripRoutes) => {
-      const departureDay = new Date(dates.departure).getDay();
-      const returnDate = new Date(dates.return).getDay();
-
-      let departureApiUrl = `https://dummyflightdata-default-rtdb.europe-west1.firebasedatabase.app/flights/${tripRoutes.departure.id}/destinationFlights/${tripRoutes.landing.id}/departureTimes/${departureDay}.json`;
-      let landinApiUrl = `https://dummyflightdata-default-rtdb.europe-west1.firebasedatabase.app/flights/${tripRoutes.landing.id}/destinationFlights/${tripRoutes.departure.id}/departureTimes/${returnDate}.json`;
-
-      axios
-        .get(departureApiUrl)
-        .then((resp) => {
-          setFlightOptions(resp.data);
-          handleCardData(tripRoutes, dates.departure);
-        })
-        .catch((err) => console.error(err))
-        .finally(() => {
-          console.log("Done");
-        });
+  const itemCreater = useCallback(
+    (departure, destination, airportName, date, time, duration) => {
+      return {
+        departure: departure,
+        destination: destination,
+        airportName: airportName,
+        date: date,
+        time: time,
+        duration: duration,
+      };
     },
-    [handleCardData]
+    []
   );
 
-  useEffect(() => {
-    console.log(departureReturnDate, "date");
-    console.log(tripRoute, "route");
-    console.log(hasReturnTrip, "hasreturn");
-    console.log(flightOptions, "flightOptions");
-  }, [departureReturnDate, tripRoute, hasReturnTrip, flightOptions]);
+  const isReturnDataFilled = useMemo(() => {
+    return hasReturnTrip && selectedItem.length !== 2;
+  }, [selectedItem, hasReturnTrip]);
+
+  const getFlightItems = useCallback(
+    (departureId, landingId, day) => {
+      const departureDay = new Date(day).getDay();
+
+      let landingApiUrl = `https://dummyflightdata-default-rtdb.europe-west1.firebasedatabase.app/flights.json`;
+      axios
+        .get(landingApiUrl)
+        .then((resp) => {
+          let tmpData = resp.data;
+          let departureData = tmpData.find((item) => item.id === departureId);
+
+          let landingData = departureData.destinationFlights.find(
+            (item) => item.id === landingId
+          );
+
+          let filteredData = landingData.departureTimes[departureDay].flights
+            ? landingData.departureTimes[departureDay].flights.map((item) => {
+                return itemCreater(
+                  landingData.originLocation,
+                  landingData.destinationLocation,
+                  landingData.destinationAirport,
+                  day,
+                  item?.departureTime,
+                  item?.flightDuration
+                );
+              })
+            : [];
+
+          setFlightOptions(filteredData);
+          setShowList(true);
+        })
+        .catch((err) => console.error(err));
+    },
+    [itemCreater]
+  );
+
+  const handleFlightData = useCallback(
+    (selectedItemObj, returnDay) => {
+      !_.isNull(selectedItemObj) &&
+        setSelectedItem((prevState) => [...prevState, selectedItemObj]);
+
+      selectedItem.length < 2 &&
+        getFlightItems(tripRoute.landing.id, tripRoute.departure.id, returnDay);
+    },
+    [getFlightItems, tripRoute, selectedItem]
+  );
+
+  const nextPage = useCallback(() => {
+    console.log("next page");
+  }, []);
 
   return (
     <Stack p={8} spacing={1}>
@@ -96,46 +131,57 @@ function MainPage() {
             handleDateChange={handleDateChange}
           />
           <Button
-            onClick={() =>
-              getFilteredFlightItems(departureReturnDate, tripRoute)
-            }
+            onClick={() => {
+              getFlightItems(
+                tripRoute.departure.id,
+                tripRoute.landing.id,
+                departureReturnDate.departure
+              );
+            }}
           >
             Search For Flight
           </Button>
         </Stack>
       </Paper>
-      {!!flightOptions && !_.isEmpty(flightOptions) && (
+
+      {showList && (
         <Stack spacing={1}>
-          {/* originLocation: tripRoutes.departure.label,
-      destinationLocation: tripRoutes.landing.label,
-      flightDuration: tripRoutes.landing.flightDuration,
-      destinationAirPort: tripRoutes.landing.destinationAirport,
-      date: date, */}
-          {flightOptions.flights.map((item, index) => (
-            <Card key={index}>
-              <Typography>{`Departure: ${locationEnumsMap.get(
-                cardData.originLocation
-              )}`}</Typography>
-              <Typography>{`Destination: ${locationEnumsMap.get(
-                cardData.destinationLocation
-              )}`}</Typography>
-              <Typography>{`Flight Duration: ${cardData.flightDuration}`}</Typography>
-              <Typography>{`Airport Name:${cardData.destinationAirPort}`}</Typography>
-              <Typography>{`Date: ${cardData.date}`}</Typography>
-              <Typography>{`Time: -`}</Typography>
+          <Stack direction={"row"} spacing={1}>
+            <Button>Sort By Flight Duration</Button>
+            <Button>Sort By Departure Time</Button>
+            <Button>Sort By Landing Time</Button>
+          </Stack>
+          {!!flightOptions && !_.isEmpty(flightOptions) ? (
+            flightOptions.map((item, index) => (
+              <Card key={index}>
+                <Typography>{`Departure: ${item.departure}`}</Typography>
+                <Typography>{`Destination: ${item.destination}`}</Typography>
+                <Typography>{`Flight Duration:${
+                  item.duration + " min" ?? "Unknown"
+                }`}</Typography>
+                <Typography>{`Airport Name:${item.airportName}`}</Typography>
+                <Typography>{`Date: ${item.date}`}</Typography>
+                <Typography>{`Time:${item.time ?? "Unknown"} `}</Typography>
+                <Button
+                  onClick={() =>
+                    isReturnDataFilled
+                      ? handleFlightData(item, departureReturnDate.return)
+                      : nextPage()
+                  }
+                >
+                  Select
+                </Button>
+              </Card>
+            ))
+          ) : (
+            <Card>
+              <Typography>No Flight</Typography>
             </Card>
-          ))}
+          )}
         </Stack>
       )}
     </Stack>
   );
 }
-// {`Departure: ${flightOptions.departureLocation} | Landing: ${
-//   flightOptions.landigLocation
-// } | Departure Date: ${
-//   flightOptions.departureDay
-// } | Departure Time: ${flightOptions.date.flights.map(
-//   (item, index) => `${item.departureTime}`
-// )} "`}
 
 export default MainPage;

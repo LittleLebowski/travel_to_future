@@ -15,7 +15,6 @@ const RangePicker = ({ hasReturnTrip, handleDateChange }) => {
 
   const onDateChange = useCallback(
     (dates) => {
-      console.log(dates);
       if (hasReturnTrip) {
         const [start, end] = dates;
         setStartDate(start);
