@@ -9,35 +9,37 @@ import SyncAltTwoToneIcon from "@mui/icons-material/SyncAltTwoTone";
 //Third-Party
 import axios from "axios";
 import _ from "lodash";
+//Enums
+import { DEPARTURE, LANDING } from "../enums/locationEnums";
 
-const LocationBox = () => {
-  const [locationFrom, setLocationFrom] = useState(null);
-  const [locationTo, setLocationTo] = useState(null);
+const LocationBox = ({ handleTripRoute }) => {
+  const [departureLocation, setDepartureLocation] = useState(null);
+  const [landingLocation, setLandingLocation] = useState(null);
 
-  const [flightData, setFlightData] = useState([]);
-  const [flightDataLoading, setFlightDataLoading] = useState(true);
+  const [departureData, setDepartureData] = useState([]);
+  const [departureDataLoading, setDepartureDataLoading] = useState(true);
 
   const [destinationData, setDestinationData] = useState([]);
   const [destinationDataLoading, setDestinationDataLoading] = useState(true);
 
   //API call
   useEffect(() => {
-    setFlightDataLoading(true);
-    const apiUrl =
+    setDepartureDataLoading(true);
+    const departureApiUrl =
       "https://dummyflightdata-default-rtdb.europe-west1.firebasedatabase.app/flights.json";
     axios
-      .get(apiUrl)
+      .get(departureApiUrl)
       .then((resp) => {
         const tmpRespData = resp.data;
 
-        setFlightData(tmpRespData);
+        setDepartureData(tmpRespData);
         setDestinationDataLoading(true);
       })
       .catch((error) => {
         console.error("Error fetching data:", error);
       })
       .finally(() => {
-        setFlightDataLoading(false);
+        setDepartureDataLoading(false);
       });
   }, []);
 
@@ -45,10 +47,10 @@ const LocationBox = () => {
     (locationFromId, isSwitch = false, switchId = null) => {
       setDestinationDataLoading(true);
 
-      let apiUrl = `https://dummyflightdata-default-rtdb.europe-west1.firebasedatabase.app/flights/${locationFromId}.json`;
+      let landinApiUrl = `https://dummyflightdata-default-rtdb.europe-west1.firebasedatabase.app/flights/${locationFromId}.json`;
 
       axios
-        .get(apiUrl)
+        .get(landinApiUrl)
         .then((resp) => {
           const tmpDestinationData = resp.data.destinationFlights;
           setDestinationData(tmpDestinationData);
@@ -57,8 +59,7 @@ const LocationBox = () => {
             const tmpLocationTo = tmpDestinationData.find(
               (item) => item.id === switchId
             );
-            console.log(tmpLocationTo, "tmpLocationTo");
-            setLocationTo(tmpLocationTo ?? null);
+            setLandingLocation(tmpLocationTo ?? null);
           }
         })
         .catch((error) => {
@@ -72,25 +73,39 @@ const LocationBox = () => {
   );
 
   const handleSwitchContent = useCallback(() => {
-    const locationToId = locationTo?.id;
-    const locationFromId = locationFrom?.id;
+    const departureLocationId = landingLocation?.id;
+    const landingLocationId = departureLocation?.id;
 
-    getDestinationData(locationToId, true, locationFromId);
+    handleTripRoute(DEPARTURE, landingLocation);
+    handleTripRoute(LANDING, departureLocation);
 
-    setLocationFrom(flightData[locationToId]);
-  }, [flightData, locationTo, locationFrom, getDestinationData]);
+    getDestinationData(departureLocationId, true, landingLocationId);
 
-  const handleFromLocationChange = useCallback(
+    setDepartureLocation(departureData[departureLocationId]);
+  }, [
+    departureData,
+    landingLocation,
+    departureLocation,
+    getDestinationData,
+    handleTripRoute,
+  ]);
+
+  const handleDepartureLocationChange = useCallback(
     (value) => {
-      setLocationFrom(value);
+      handleTripRoute(DEPARTURE, value);
+      setDepartureLocation(value);
       getDestinationData(value.id);
     },
-    [getDestinationData]
+    [getDestinationData, handleTripRoute]
   );
 
-  const handleToLocationChange = useCallback((value) => {
-    setLocationTo(value);
-  }, []);
+  const handleDestinationLocationChange = useCallback(
+    (value) => {
+      handleTripRoute(LANDING, value);
+      setLandingLocation(value);
+    },
+    [handleTripRoute]
+  );
 
   return (
     <Stack
@@ -103,11 +118,11 @@ const LocationBox = () => {
     >
       <Box flex={1}>
         <LocationAutocomplite
-          value={locationFrom}
-          options={flightData}
-          handleFunction={handleFromLocationChange}
+          value={departureLocation}
+          options={departureData}
+          handleFunction={handleDepartureLocationChange}
           label={"From"}
-          dataLoading={flightDataLoading}
+          dataLoading={departureDataLoading}
         />
       </Box>
       <Box
@@ -118,7 +133,7 @@ const LocationBox = () => {
         }}
       >
         <IconButton
-          disabled={_.isEmpty(locationTo)}
+          disabled={_.isEmpty(landingLocation)}
           onClick={handleSwitchContent}
         >
           <SyncAltTwoToneIcon />
@@ -126,13 +141,13 @@ const LocationBox = () => {
       </Box>
       <Box flex={1}>
         <LocationAutocomplite
-          value={locationTo}
+          value={landingLocation}
           options={destinationData}
-          handleFunction={handleToLocationChange}
+          handleFunction={handleDestinationLocationChange}
           label={"To"}
           dataLoading={destinationDataLoading}
           waitingText={
-            _.isNull(locationFrom)
+            _.isNull(departureLocation)
               ? "Select a departure airport"
               : "Waiting for options to load"
           }

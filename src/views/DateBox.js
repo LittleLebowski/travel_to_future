@@ -1,5 +1,5 @@
 //React
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 //MUI
 import {
   Box,
@@ -23,10 +23,6 @@ const DateBox = ({ hasReturnTrip, departureReturnDate, handleDateChange }) => {
     setAnchorElCalendarPopper(event.currentTarget);
     setOpenCalendarPopper((previousOpen) => !previousOpen);
   }, []);
-
-  useEffect(() => {
-    console.log(departureReturnDate);
-  }, [departureReturnDate]);
 
   return (
     <Stack px={2}>
