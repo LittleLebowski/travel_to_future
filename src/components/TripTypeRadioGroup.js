@@ -9,14 +9,15 @@ import {
 import React, { useState } from "react";
 
 //Local Enums
-const RETURN = 0;
-const ONE_WAY = 1;
+const RETURN = 1;
+const ONE_WAY = 0;
 
-const TripTypeRadioGroup = () => {
+const TripTypeRadioGroup = ({ handleTripTypeChange }) => {
   const [tripType, setTripType] = useState(RETURN);
 
   const handleChange = (_e) => {
     setTripType(_e.target.value);
+    handleTripTypeChange(Number(_e.target.value)); //value is changing to string
   };
 
   return (
