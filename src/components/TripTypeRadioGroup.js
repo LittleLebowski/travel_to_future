@@ -21,7 +21,7 @@ const TripTypeRadioGroup = ({ handleTripTypeChange }) => {
   };
 
   return (
-    <FormControl sx={{ px: 4, py: 1 }}>
+    <FormControl sx={{ px: 4, py: 1, color: "#687e94", fontWeight: 600 }}>
       <RadioGroup
         row
         aria-labelledby="radio-buttons-group"
@@ -29,8 +29,16 @@ const TripTypeRadioGroup = ({ handleTripTypeChange }) => {
         value={tripType}
         onChange={handleChange}
       >
-        <FormControlLabel value={RETURN} control={<Radio />} label="Return" />
-        <FormControlLabel value={ONE_WAY} control={<Radio />} label="One Way" />
+        <FormControlLabel
+          value={RETURN}
+          control={<Radio sx={{ color: "#687e94", fontWeight: 600 }} />}
+          label="Return"
+        />
+        <FormControlLabel
+          value={ONE_WAY}
+          control={<Radio sx={{ color: "#687e94", fontWeight: 600 }} />}
+          label="One Way"
+        />
       </RadioGroup>
     </FormControl>
   );

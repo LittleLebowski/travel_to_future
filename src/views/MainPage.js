@@ -1,21 +1,28 @@
 //React
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+
 //MUI
-import { Button, Card, Paper, Stack, Typography } from "@mui/material";
+import { Paper, Stack, Typography } from "@mui/material";
+
 //Componenets
 import TripTypeRadioGroup from "../components/TripTypeRadioGroup";
+import LazyListener from "../components/lazyListener/LazyListener";
+import CustomCard from "../components/CustomCard";
+import CustomButton from "../components/CustomButton";
+
 //Views
 import LocationBox from "./LocationBox";
 import DateBox from "./DateBox";
 import FlightList from "./FlightList";
+
 //Third-Party
 import axios from "axios";
 import _ from "lodash";
+
 //Helpers
 import {
   calculateArrivalTime,
   createCustomDateTime,
-  timeFormatter,
 } from "../helper/timeZoneHelper";
 
 function MainPage() {
@@ -23,6 +30,7 @@ function MainPage() {
   const [showList, setShowList] = useState(false);
   const [selectedItem, setSelectedItem] = useState([]);
   const [cityTimeZones, setCityTimeZones] = useState();
+  const [waiting, setWaiting] = useState(false);
 
   const [errorObject, setErrorObject] = useState({
     departurePlace: false,
@@ -40,6 +48,11 @@ function MainPage() {
 
   const [flightOptions, setFlightOptions] = useState();
 
+  const getRandomNumber = useCallback(() => {
+    //forgot to add flight fee to BE
+    return Math.floor(Math.random() * (300 - 80 + 1)) + 80;
+  }, []);
+
   const handleErrorObject = useCallback((key, value) => {
     setErrorObject((prevState) => ({ ...prevState, [key]: value }));
   }, []);
@@ -47,7 +60,6 @@ function MainPage() {
   const handleDateChange = useCallback(
     (key, value) => {
       setDepartureReturnDate((prevState) => ({ ...prevState, [key]: value }));
-
       handleErrorObject(key, false);
     },
     [handleErrorObject]
@@ -58,16 +70,12 @@ function MainPage() {
     setHasReturnTrip(Boolean(v));
     setShowList(false);
 
-    setDepartureReturnDate((prevState) => ({ ...prevState, return: "" }));
+    setDepartureReturnDate({ departure: null, return: null });
   }, []);
 
   const handleTripRoute = useCallback((key, value) => {
     setTripRoute((prevState) => ({ ...prevState, [key]: value }));
   }, []);
-
-  useEffect(() => {
-    console.log(errorObject);
-  }, [errorObject]);
 
   const itemCreater = useCallback(
     (
@@ -80,7 +88,8 @@ function MainPage() {
       departureId,
       landingId,
       departureTimeZone,
-      landingTimeZone
+      landingTimeZone,
+      fee
     ) => {
       let flightDurationInHours = duration / 60;
 
@@ -101,6 +110,7 @@ function MainPage() {
         duration: duration,
         departureId: departureId,
         landingId: landingId,
+        fee: fee,
       };
     },
     []
@@ -118,6 +128,7 @@ function MainPage() {
 
   const getFlightItems = useCallback(
     (departureId, landingId, day) => {
+      setWaiting(true);
       const departureDay = new Date(day).getDay();
       let departureTimeZone = cityTimeZones.find(
         (item) => Number(item.id) === Number(departureId)
@@ -153,7 +164,8 @@ function MainPage() {
                   departureId,
                   landingId,
                   departureTimeZone,
-                  landingTimeZone
+                  landingTimeZone,
+                  getRandomNumber()
                 );
               })
             : [];
@@ -161,9 +173,10 @@ function MainPage() {
           setFlightOptions(filteredData);
           setShowList(true);
         })
-        .catch((err) => console.error(err));
+        .catch((err) => console.error(err))
+        .finally(() => setWaiting(false));
     },
-    [itemCreater, cityTimeZones]
+    [itemCreater, cityTimeZones, getRandomNumber]
   );
 
   const selectionSize = useMemo(() => {
@@ -212,17 +225,13 @@ function MainPage() {
   );
 
   return (
-    <Stack p={8} spacing={1}>
-      <Paper>
+    <Stack m={8} p={8} borderRadius={3} spacing={2} bgcolor={"#F9F9F9"}>
+      <Paper elevation={3}>
         <TripTypeRadioGroup
           hasReturnTrip={hasReturnTrip}
           handleTripTypeChange={handleTripTypeChange}
         />
-        <Stack
-          alignItems={"center"}
-          justifyContent={"space-between"}
-          direction={"row"}
-        >
+        <Stack direction={"row"}>
           <LocationBox
             handleTripRoute={handleTripRoute}
             handleErrorObject={(key, value) => handleErrorObject(key, value)}
@@ -235,41 +244,36 @@ function MainPage() {
             departureReturnDate={departureReturnDate}
             handleDateChange={(key, value) => handleDateChange(key, value)}
           />
-          <Button
-            onClick={() => {
-              handleSearchClick(
-                tripRoute.departure.id,
-                tripRoute.landing.id,
-                departureReturnDate.departure
-              );
-            }}
-          >
-            Search For Flight
-          </Button>
+          <Stack p={2}>
+            <CustomButton
+              text={"Search Flight"}
+              hoverColor={"#fc0522"}
+              style={{
+                backgroundColor: "#E81932",
+                height: "64px",
+              }}
+              onClick={() => {
+                handleSearchClick(
+                  tripRoute.departure.id,
+                  tripRoute.landing.id,
+                  departureReturnDate.departure
+                );
+              }}
+            />
+          </Stack>
         </Stack>
       </Paper>
 
       {showList && (
-        <>
+        <LazyListener listen={waiting}>
           {Array.isArray(selectedItem) && !_.isEmpty(selectedItem) && (
-            <Stack spacing={1}>
+            <Stack spacing={2} pt={1}>
               {selectedItem.map((item, index) => {
                 return (
-                  <Card bgcolor={"yellow"} key={`#${index}`}>
-                    <Typography>{`Departure: ${item.departure}`}</Typography>
-                    <Typography>{`Destination: ${item.destination}`}</Typography>
-                    <Typography>{`Flight Duration:${
-                      item.duration + " min" ?? "Unknown"
-                    }`}</Typography>
-                    <Typography>{`Airport Name:${item.airportName}`}</Typography>
+                  <Stack key={index}>
                     <Typography>{`Date: ${item.date.toDateString()}`}</Typography>
-                    <Typography>{`Departure Time:${
-                      timeFormatter.format(item.departuretime) ?? "Unknown"
-                    } `}</Typography>
-                    <Typography>{`Landing Time:${
-                      timeFormatter.format(item.arrivalTime) ?? "Unknown"
-                    } `}</Typography>
-                  </Card>
+                    <CustomCard key={index} item={item} />
+                  </Stack>
                 );
               })}
             </Stack>
@@ -281,7 +285,7 @@ function MainPage() {
               departureReturnDate={departureReturnDate}
             />
           )}
-        </>
+        </LazyListener>
       )}
     </Stack>
   );

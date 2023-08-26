@@ -55,3 +55,13 @@ const timeOptions = {
 };
 
 export const timeFormatter = new Intl.DateTimeFormat("en-US", timeOptions);
+
+export const minuteToHour = (min) => {
+  const hours = Math.floor(min / 60);
+  const mins = min % 60;
+
+  const hoursStr = hours < 10 ? `0${hours}` : `${hours}`;
+  const minsStr = mins < 10 ? `0${mins}` : `${mins}`;
+
+  return `${hoursStr}h ${minsStr}m`;
+};

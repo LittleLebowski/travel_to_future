@@ -83,11 +83,11 @@ const LocationBox = ({ handleTripRoute, handleErrorObject, errorObject }) => {
       p={2}
       spacing={2}
       justifyContent={"space-between"}
-      alignItems={"center"}
       direction={"row"}
-      width={"50%"}
+      width={"40%"}
     >
-      <Box flex={1}>
+      <Box flex={1} minHeight={"88px"}>
+        {/* minHeight is to evade moving of the box when there is an error  */}
         <LocationAutocomplite
           errorKey={"departurePlace"}
           handleErrorObject={handleErrorObject}
@@ -99,7 +99,8 @@ const LocationBox = ({ handleTripRoute, handleErrorObject, errorObject }) => {
           dataLoading={departureDataLoading}
         />
       </Box>
-      <Box flex={1}>
+      <Box flex={1} minHeight={"88px"}>
+        {/* minHeight is to evade moving of the box when there is an error  */}
         <LocationAutocomplite
           errorKey={"landingPlace"}
           handleErrorObject={handleErrorObject}
