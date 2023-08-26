@@ -26,9 +26,6 @@ const RangePicker = ({ hasReturnTrip, handleDateChange }) => {
         if (end) {
           handleDateChange(RETURN, end);
         }
-
-        // start &&
-        // end && handleDateChange(RETURN, end);
       } else {
         setStartDate(dates);
         dates && handleDateChange(DEPARTURE, dates);

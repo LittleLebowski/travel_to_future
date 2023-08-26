@@ -10,7 +10,7 @@ import _ from "lodash";
 //Enums
 import { DEPARTURE, LANDING } from "../enums/locationEnums";
 
-const LocationBox = ({ handleTripRoute }) => {
+const LocationBox = ({ handleTripRoute, handleErrorObject, errorObject }) => {
   const [departureLocation, setDepartureLocation] = useState(null);
   const [landingLocation, setLandingLocation] = useState(null);
 
@@ -73,10 +73,6 @@ const LocationBox = ({ handleTripRoute }) => {
   const handleDestinationLocationChange = useCallback(
     (value) => {
       handleTripRoute(LANDING, value);
-      // let tmpDeparture = departureLocation.destinationFlights.find(
-      //   (item) => item.id === value.id
-      // );
-      // handleTripRoute(DEPARTURE, tmpDeparture);
       setLandingLocation(value);
     },
     [handleTripRoute]
@@ -93,6 +89,9 @@ const LocationBox = ({ handleTripRoute }) => {
     >
       <Box flex={1}>
         <LocationAutocomplite
+          errorKey={"departurePlace"}
+          handleErrorObject={handleErrorObject}
+          errorValue={errorObject.departurePlace}
           value={departureLocation}
           options={departureData}
           handleFunction={handleDepartureLocationChange}
@@ -102,6 +101,9 @@ const LocationBox = ({ handleTripRoute }) => {
       </Box>
       <Box flex={1}>
         <LocationAutocomplite
+          errorKey={"landingPlace"}
+          handleErrorObject={handleErrorObject}
+          errorValue={errorObject.landingPlace}
           value={landingLocation}
           options={destinationData}
           handleFunction={handleDestinationLocationChange}

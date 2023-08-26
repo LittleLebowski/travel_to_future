@@ -24,6 +24,13 @@ function MainPage() {
   const [selectedItem, setSelectedItem] = useState([]);
   const [cityTimeZones, setCityTimeZones] = useState();
 
+  const [errorObject, setErrorObject] = useState({
+    departurePlace: false,
+    landingPlace: false,
+    departure: false,
+    return: false,
+  });
+
   const [tripRoute, setTripRoute] = useState({ departure: "", landing: "" });
 
   const [departureReturnDate, setDepartureReturnDate] = useState({
@@ -33,13 +40,22 @@ function MainPage() {
 
   const [flightOptions, setFlightOptions] = useState();
 
-  const handleDateChange = useCallback((key, value) => {
-    setDepartureReturnDate((prevState) => ({ ...prevState, [key]: value }));
+  const handleErrorObject = useCallback((key, value) => {
+    setErrorObject((prevState) => ({ ...prevState, [key]: value }));
   }, []);
+
+  const handleDateChange = useCallback(
+    (key, value) => {
+      setDepartureReturnDate((prevState) => ({ ...prevState, [key]: value }));
+
+      handleErrorObject(key, false);
+    },
+    [handleErrorObject]
+  );
 
   const handleTripTypeChange = useCallback((v) => {
     //On trip type change reset return date and close list
-    setHasReturnTrip(!!v);
+    setHasReturnTrip(Boolean(v));
     setShowList(false);
 
     setDepartureReturnDate((prevState) => ({ ...prevState, return: "" }));
@@ -48,6 +64,10 @@ function MainPage() {
   const handleTripRoute = useCallback((key, value) => {
     setTripRoute((prevState) => ({ ...prevState, [key]: value }));
   }, []);
+
+  useEffect(() => {
+    console.log(errorObject);
+  }, [errorObject]);
 
   const itemCreater = useCallback(
     (
@@ -164,9 +184,32 @@ function MainPage() {
     [getFlightItems, tripRoute, hasReturnTrip]
   );
 
-  useEffect(() => {
-    console.log(flightOptions, "flightOptions xxx");
-  }, [flightOptions]);
+  const handleSearchClick = useCallback(
+    (departureid, landingid, departureDate) => {
+      setSelectedItem([]); //on new search clear selected items
+      if (
+        _.isEmpty(tripRoute.departure) ||
+        _.isEmpty(tripRoute.landing) ||
+        _.isNull(departureReturnDate.departure) ||
+        (hasReturnTrip && _.isNull(departureReturnDate.return))
+      ) {
+        handleErrorObject("departurePlace", _.isEmpty(tripRoute.departure));
+        handleErrorObject("landingPlace", _.isEmpty(tripRoute.landing));
+        handleErrorObject("departure", _.isNull(departureReturnDate.departure));
+        if (hasReturnTrip)
+          handleErrorObject("return", _.isNull(departureReturnDate.return));
+      } else {
+        getFlightItems(departureid, landingid, departureDate);
+      }
+    },
+    [
+      departureReturnDate,
+      getFlightItems,
+      handleErrorObject,
+      hasReturnTrip,
+      tripRoute,
+    ]
+  );
 
   return (
     <Stack p={8} spacing={1}>
@@ -180,16 +223,21 @@ function MainPage() {
           justifyContent={"space-between"}
           direction={"row"}
         >
-          <LocationBox handleTripRoute={handleTripRoute} />
+          <LocationBox
+            handleTripRoute={handleTripRoute}
+            handleErrorObject={(key, value) => handleErrorObject(key, value)}
+            errorObject={errorObject}
+          />
           <DateBox
+            handleErrorObject={(key, value) => handleErrorObject(key, value)}
+            errorObject={errorObject}
             hasReturnTrip={hasReturnTrip}
             departureReturnDate={departureReturnDate}
             handleDateChange={(key, value) => handleDateChange(key, value)}
           />
           <Button
             onClick={() => {
-              setSelectedItem([]); //on new search clear selected items
-              getFlightItems(
+              handleSearchClick(
                 tripRoute.departure.id,
                 tripRoute.landing.id,
                 departureReturnDate.departure

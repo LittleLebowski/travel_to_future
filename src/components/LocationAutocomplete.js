@@ -1,7 +1,12 @@
 //MUI
 import { Autocomplete, TextField } from "@mui/material";
+//
+import _ from "lodash";
 
 const LocationAutocomplite = ({
+  errorKey,
+  handleErrorObject,
+  errorValue,
   value,
   handleFunction,
   label,
@@ -22,6 +27,9 @@ const LocationAutocomplite = ({
         <TextField
           variant="filled"
           margin="none"
+          onBlur={() => handleErrorObject(errorKey, _.isEmpty(value))}
+          error={errorValue}
+          helperText={errorValue ? "Field cannot be empty" : ""}
           label={label}
           inputProps={{
             ...params.inputProps,
