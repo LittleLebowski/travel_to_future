@@ -53,9 +53,11 @@ const DateBox = ({ hasReturnTrip, departureReturnDate, handleDateChange }) => {
                   justifyContent={"space-between"}
                   alignItems={"center"}
                 >
-                  <Typography>Departure</Typography>
+                  <Typography>Departure Date</Typography>
                   {departureReturnDate.departure ? (
-                    <Typography>{departureReturnDate.departure}</Typography>
+                    <Typography>
+                      {departureReturnDate?.departure.toDateString() ?? "-"}
+                    </Typography>
                   ) : (
                     <CalendarTodayOutlinedIcon />
                   )}
@@ -67,9 +69,11 @@ const DateBox = ({ hasReturnTrip, departureReturnDate, handleDateChange }) => {
                   justifyContent={"space-between"}
                   alignItems={"center"}
                 >
-                  <Typography>Return</Typography>
+                  <Typography>Return Date</Typography>
                   {departureReturnDate.return ? (
-                    <Typography>{departureReturnDate.return}</Typography>
+                    <Typography>
+                      {departureReturnDate?.return.toDateString() ?? "-"}
+                    </Typography>
                   ) : (
                     <CalendarTodayOutlinedIcon />
                   )}
@@ -103,7 +107,9 @@ const DateBox = ({ hasReturnTrip, departureReturnDate, handleDateChange }) => {
                 <Paper elevation={1}>
                   <RangePicker
                     hasReturnTrip={hasReturnTrip}
-                    handleDateChange={handleDateChange}
+                    handleDateChange={(key, value) =>
+                      handleDateChange(key, value)
+                    }
                   />
                 </Paper>
               </Fade>

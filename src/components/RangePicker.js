@@ -19,11 +19,19 @@ const RangePicker = ({ hasReturnTrip, handleDateChange }) => {
         const [start, end] = dates;
         setStartDate(start);
         setEndDate(end);
-        start && handleDateChange(DEPARTURE, start.toDateString());
-        end && handleDateChange(RETURN, end.toDateString());
+
+        if (start) {
+          handleDateChange(DEPARTURE, start);
+        }
+        if (end) {
+          handleDateChange(RETURN, end);
+        }
+
+        // start &&
+        // end && handleDateChange(RETURN, end);
       } else {
         setStartDate(dates);
-        dates && handleDateChange(DEPARTURE, dates.toDateString());
+        dates && handleDateChange(DEPARTURE, dates);
         handleDateChange(RETURN, "");
       }
     },
