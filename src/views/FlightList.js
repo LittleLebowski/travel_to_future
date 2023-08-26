@@ -1,7 +1,7 @@
 //React
 import React, { useCallback, useMemo, useState } from "react";
 //MUI
-import { Card, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Stack, Typography, useTheme } from "@mui/material";
 //Third-Party
 import _ from "lodash";
 //Components
@@ -99,12 +99,20 @@ const FlightList = ({
               onClickAction={handleFlightData}
               item={item}
               departureReturnDate={departureReturnDate.return}
+              selectButton={true}
             />
           ))
         ) : (
-          <Card>
-            <Typography>No Flight</Typography>
-          </Card>
+          <Box
+            minHeight={"30vh"}
+            display={"flex"}
+            justifyContent={"center"}
+            alignItems={"center"}
+          >
+            <Typography fontWeight={600} color={"#697684"} fontSize={18}>
+              There Are No Flights Available On This Day
+            </Typography>
+          </Box>
         )}
       </Stack>
     </Stack>

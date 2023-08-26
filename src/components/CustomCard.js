@@ -1,22 +1,24 @@
 import { Box, Card, Stack, Typography } from "@mui/material";
 import React from "react";
 import { minuteToHour, timeFormatter } from "../helper/timeZoneHelper";
+import CustomButton from "./CustomButton";
+import SendIcon from "@mui/icons-material/Send";
 
 const CustomCard = ({
   onClickAction = () => null,
   item,
   departureReturnDate = null,
+  selectButton = false,
 }) => {
   return (
     <Card
-      onClick={() => onClickAction(item, departureReturnDate)}
       sx={{
         display: "flex",
         flexDirection: "row",
         padding: "24px",
         borderRadius: "14px",
         "&:hover": {
-          cursor: "pointer",
+          cursor: "default",
           boxShadow: "0px 0px 25px 1px rgba(129,138,168,1)",
           transitionProperty: "all",
           transitionDuration: "0.5s",
@@ -95,23 +97,39 @@ const CustomCard = ({
           </Typography>
         </Box>
       </Stack>
-      <Stack px={4}>
-        <Typography align="left">{`Flight Price: ${item.fee}$`}</Typography>
+      <Stack
+        pl={4}
+        spacing={4}
+        direction={"row"}
+        display={"flex"}
+        justifyContent={"space-between"}
+        flex={1}
+      >
+        <Stack>
+          <Box display={"flex"} flexDirection={"row"} gap={1} color={"#687e94"}>
+            <Typography align="left" fontWeight={600} fontSize={14} noWrap>
+              Flight Price: {item.fee}
+            </Typography>
+          </Box>
+          <Box display={"flex"} flexDirection={"row"} gap={1} color={"#687e94"}>
+            <Typography align="left" fontWeight={600} fontSize={14} noWrap>
+              Airline: {item.airline}
+            </Typography>
+          </Box>
+        </Stack>
+        {selectButton && (
+          <Stack display={"flex"} justifyContent={"center"}>
+            <CustomButton
+              text={"Select"}
+              style={{ borderRadius: 1, backgroundColor: "#526A81" }}
+              border={2}
+              hoverColor={"#91bfed"}
+              onClick={() => onClickAction(item, departureReturnDate)}
+              endIcon={<SendIcon sx={{ color: "#FFFFFF" }} />}
+            />
+          </Stack>
+        )}
       </Stack>
-      {/* 
-      <Typography>{`Departure: ${item.departure}`}</Typography>
-      <Typography>{`Destination: ${item.destination}`}</Typography>
-      <Typography>{`Flight Duration:${
-        item.duration + " min" ?? "Unknown"
-      }`}</Typography>
-      <Typography>{`Airport Name:${item.airportName}`}</Typography>
-      <Typography>{`Date: ${item.date.toDateString()}`}</Typography>
-      <Typography>{`Departure Time:${
-        timeFormatter.format(item.departuretime) ?? "Unknown"
-      } `}</Typography>
-      <Typography>{`Landing Time:${
-        timeFormatter.format(item.arrivalTime) ?? "Unknown"
-      } `}</Typography> */}
     </Card>
   );
 };

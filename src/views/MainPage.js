@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 //MUI
-import { Paper, Stack, Typography } from "@mui/material";
+import { Box, Paper, Stack, Typography } from "@mui/material";
 
 //Componenets
 import TripTypeRadioGroup from "../components/TripTypeRadioGroup";
@@ -24,6 +24,8 @@ import {
   calculateArrivalTime,
   createCustomDateTime,
 } from "../helper/timeZoneHelper";
+
+import SearchIcon from "@mui/icons-material/Search";
 
 function MainPage() {
   const [hasReturnTrip, setHasReturnTrip] = useState(true);
@@ -47,11 +49,6 @@ function MainPage() {
   });
 
   const [flightOptions, setFlightOptions] = useState();
-
-  const getRandomNumber = useCallback(() => {
-    //forgot to add flight fee to BE
-    return Math.floor(Math.random() * (300 - 80 + 1)) + 80;
-  }, []);
 
   const handleErrorObject = useCallback((key, value) => {
     setErrorObject((prevState) => ({ ...prevState, [key]: value }));
@@ -89,7 +86,8 @@ function MainPage() {
       landingId,
       departureTimeZone,
       landingTimeZone,
-      fee
+      fee,
+      airline
     ) => {
       let flightDurationInHours = duration / 60;
 
@@ -111,6 +109,7 @@ function MainPage() {
         departureId: departureId,
         landingId: landingId,
         fee: fee,
+        airline: airline,
       };
     },
     []
@@ -165,7 +164,8 @@ function MainPage() {
                   landingId,
                   departureTimeZone,
                   landingTimeZone,
-                  getRandomNumber()
+                  item.flightFee,
+                  item.flightBrand
                 );
               })
             : [];
@@ -176,7 +176,7 @@ function MainPage() {
         .catch((err) => console.error(err))
         .finally(() => setWaiting(false));
     },
-    [itemCreater, cityTimeZones, getRandomNumber]
+    [itemCreater, cityTimeZones]
   );
 
   const selectionSize = useMemo(() => {
@@ -231,7 +231,7 @@ function MainPage() {
           hasReturnTrip={hasReturnTrip}
           handleTripTypeChange={handleTripTypeChange}
         />
-        <Stack direction={"row"}>
+        <Stack direction={"row"} justifyContent={"space-between"}>
           <LocationBox
             handleTripRoute={handleTripRoute}
             handleErrorObject={(key, value) => handleErrorObject(key, value)}
@@ -248,6 +248,7 @@ function MainPage() {
             <CustomButton
               text={"Search Flight"}
               hoverColor={"#fc0522"}
+              endIcon={<SearchIcon sx={{ color: "#FFFFFF" }} />}
               style={{
                 backgroundColor: "#E81932",
                 height: "64px",
@@ -267,11 +268,24 @@ function MainPage() {
       {showList && (
         <LazyListener listen={waiting}>
           {Array.isArray(selectedItem) && !_.isEmpty(selectedItem) && (
-            <Stack spacing={2} pt={1}>
+            <Stack
+              spacing={2}
+              pt={1}
+              bgcolor={"#2B3947"}
+              p={2}
+              borderRadius={1}
+            >
               {selectedItem.map((item, index) => {
+                let title = index === 0 ? "Departure Date" : "Return Date";
                 return (
                   <Stack key={index}>
-                    <Typography>{`Date: ${item.date.toDateString()}`}</Typography>
+                    <Box px={3}>
+                      <Typography
+                        color={"white"}
+                        fontWeight={600}
+                        fontSize={18}
+                      >{`${title}: ${item.date.toDateString()}`}</Typography>
+                    </Box>
                     <CustomCard key={index} item={item} />
                   </Stack>
                 );
