@@ -5,7 +5,6 @@ import {
   Typography,
   useTheme,
   useMediaQuery,
-  Divider,
 } from "@mui/material";
 
 import React from "react";

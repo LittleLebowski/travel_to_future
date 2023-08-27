@@ -9,11 +9,14 @@ import {
   Popper,
   Stack,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 //Components
 import RangePicker from "../components/RangePicker";
 //Icons
 import SyncAltRoundedIcon from "@mui/icons-material/SyncAltRounded";
+import { SMALL_SCREEN_SIZE } from "../enums/screenSizing";
 
 const DateBox = ({
   hasReturnTrip,
@@ -23,6 +26,11 @@ const DateBox = ({
 }) => {
   const [anchorElCalendarPopper, setAnchorElCalendarPopper] = useState(null);
   const [openCalendarPopper, setOpenCalendarPopper] = useState(false);
+
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(
+    theme.breakpoints.down(SMALL_SCREEN_SIZE)
+  );
 
   const handlePopperClick = useCallback((event) => {
     setAnchorElCalendarPopper(event.currentTarget);
@@ -61,6 +69,7 @@ const DateBox = ({
             display={"flex"}
             flex={1}
             maxHeight={56}
+            minHeight={56}
             sx={{
               "&:hover": {
                 cursor: "pointer",
@@ -68,7 +77,6 @@ const DateBox = ({
               },
             }}
             borderRadius={1}
-            // height={"56px"}
           >
             {hasReturnTrip ? (
               <Stack
@@ -154,6 +162,7 @@ const DateBox = ({
             anchorEl={anchorElCalendarPopper}
             placement={"bottom"}
             transition
+            sx={{ zIndex: 3000, width: isSmallScreen ? "244px" : "none" }}
           >
             {({ TransitionProps }) => (
               <Fade {...TransitionProps} timeout={100}>

@@ -2,7 +2,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 //MUI
-import { Box, Paper, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Paper,
+  Stack,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
 
 //Componenets
 import TripTypeRadioGroup from "../components/TripTypeRadioGroup";
@@ -27,6 +34,8 @@ import {
 
 import SearchIcon from "@mui/icons-material/Search";
 
+import { SMALL_SCREEN_SIZE } from "../enums/screenSizing";
+
 function MainPage() {
   const [hasReturnTrip, setHasReturnTrip] = useState(true);
   const [showList, setShowList] = useState(false);
@@ -49,6 +58,11 @@ function MainPage() {
   });
 
   const [flightOptions, setFlightOptions] = useState();
+
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(
+    theme.breakpoints.down(SMALL_SCREEN_SIZE)
+  );
 
   const handleErrorObject = useCallback((key, value) => {
     setErrorObject((prevState) => ({ ...prevState, [key]: value }));
@@ -229,8 +243,9 @@ function MainPage() {
 
   return (
     <Stack
-      maxWidth={"950px"}
-      m={"0 auto"}
+      maxWidth={"952px"}
+      mx={isSmallScreen ? 2 : "auto"}
+      mt={2}
       p={2}
       borderRadius={3}
       spacing={2}
