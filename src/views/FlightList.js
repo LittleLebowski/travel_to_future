@@ -7,6 +7,9 @@ import _ from "lodash";
 //Components
 import CustomCard from "../components/CustomCard";
 import CustomButton from "../components/CustomButton";
+//Icons
+import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 
 const FlightList = ({
   flightOptions,
@@ -15,17 +18,25 @@ const FlightList = ({
 }) => {
   const [sortingOptions, setSortingOptions] = useState({
     isAscending: false,
-    sortBy: "duration",
+    sortBy: null,
   });
 
   const theme = useTheme();
 
+  const buttonIconSelector = useCallback((isAscending) => {
+    return isAscending ? (
+      <KeyboardArrowUpRoundedIcon sx={{ color: "#FFFFFF" }} />
+    ) : (
+      <KeyboardArrowDownRoundedIcon sx={{ color: "#FFFFFF" }} />
+    );
+  }, []);
+
   const handleSortingOptions = useCallback((sortBy) => {
-    setSortingOptions((prevState) => ({
-      ...prevState,
-      isAscending: !prevState.isAscending,
-      sortBy: sortBy,
-    }));
+    setSortingOptions((prevState) => {
+      let sortingValue =
+        sortBy === prevState.sortBy ? !prevState.isAscending : false;
+      return { ...prevState, isAscending: sortingValue, sortBy: sortBy };
+    });
   }, []);
 
   const sorter = useCallback((flightOptions, sortingOptions) => {
@@ -47,6 +58,10 @@ const FlightList = ({
     return sorter(flightOptionsCopy, sortingOptions);
   }, [flightOptions, sortingOptions, sorter]);
 
+  const buttonIcons = useMemo(() => {
+    return buttonIconSelector(sortingOptions.isAscending);
+  }, [buttonIconSelector, sortingOptions]);
+
   return (
     <Stack borderRadius={3}>
       <Stack
@@ -57,6 +72,7 @@ const FlightList = ({
         bgcolor={"#526a81"}
       >
         <CustomButton
+          endIcon={sortingOptions.sortBy === "duration" ? buttonIcons : null}
           style={{ borderColor: "#E8E8E8", borderRadius: 1 }}
           border={2}
           hoverColor={"#91bfed"}
@@ -67,6 +83,9 @@ const FlightList = ({
 
         <CustomButton
           style={{ borderColor: "#E8E8E8", borderRadius: 1 }}
+          endIcon={
+            sortingOptions.sortBy === "departuretime" ? buttonIcons : null
+          }
           border={2}
           hoverColor={"#91bfed"}
           variant="outlined"
@@ -76,6 +95,7 @@ const FlightList = ({
 
         <CustomButton
           style={{ borderColor: "#E8E8E8", borderRadius: 1 }}
+          endIcon={sortingOptions.sortBy === "arrivalTime" ? buttonIcons : null}
           border={2}
           hoverColor={"#91bfed"}
           variant="outlined"
