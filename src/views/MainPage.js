@@ -97,10 +97,13 @@ function MainPage() {
         flightDurationInHours,
         parseInt(landingTimeZone.gmt)
       );
-
+      let departureLocation =
+        departure.charAt(0).toUpperCase() + departure.slice(1);
+      let destinationLocation =
+        destination.charAt(0).toUpperCase() + destination.slice(1);
       return {
-        departure: departure,
-        destination: destination,
+        departure: departureLocation,
+        destination: destinationLocation,
         airportName: airportName,
         date: date,
         departuretime: departuretime,
@@ -225,18 +228,31 @@ function MainPage() {
   );
 
   return (
-    <Stack m={8} p={8} borderRadius={3} spacing={2} bgcolor={"#F9F9F9"}>
+    <Stack
+      maxWidth={"950px"}
+      m={"0 auto"}
+      p={2}
+      borderRadius={3}
+      spacing={2}
+      bgcolor={"#F9F9F9"}
+    >
       <Paper elevation={3}>
         <TripTypeRadioGroup
           hasReturnTrip={hasReturnTrip}
           handleTripTypeChange={handleTripTypeChange}
         />
-        <Stack direction={"row"} justifyContent={"space-between"}>
+        <Stack
+          direction={"row"}
+          justifyContent={"space-between"}
+          minHeight={"88px"}
+          flexWrap={"wrap"}
+        >
           <LocationBox
             handleTripRoute={handleTripRoute}
             handleErrorObject={(key, value) => handleErrorObject(key, value)}
             errorObject={errorObject}
           />
+
           <DateBox
             handleErrorObject={(key, value) => handleErrorObject(key, value)}
             errorObject={errorObject}
@@ -244,14 +260,15 @@ function MainPage() {
             departureReturnDate={departureReturnDate}
             handleDateChange={(key, value) => handleDateChange(key, value)}
           />
-          <Stack p={2}>
+          <Stack p={2} flex={1}>
             <CustomButton
+              fullWidth
               text={"Search Flight"}
               hoverColor={"#fc0522"}
               endIcon={<SearchIcon sx={{ color: "#FFFFFF" }} />}
               style={{
                 backgroundColor: "#E81932",
-                height: "64px",
+                height: "56px",
               }}
               onClick={() => {
                 handleSearchClick(

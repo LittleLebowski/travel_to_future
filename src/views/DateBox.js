@@ -35,29 +35,40 @@ const DateBox = ({
 
   const headerText = useCallback((title) => {
     return (
-      <Typography align="left" noWrap fontWeight={600} color={"#687e94"}>
+      <Typography
+        align="left"
+        noWrap
+        fontSize={14}
+        fontWeight={600}
+        color={"#687e94"}
+      >
         {title}
       </Typography>
     );
   }, []);
 
   return (
-    <Stack p={2}>
+    <Stack p={2} flex={1}>
       <ClickAwayListener onClickAway={handleClickAway}>
-        <Box
-          sx={{
-            "&:hover": {
-              cursor: "pointer",
-            },
-          }}
-        >
+        <Box display={"flex"} flexDirection={"column"} flex={1}>
           <Box
             borderBottom={errorObject.return || errorObject.departure ? 1 : 0}
             borderColor={"red"}
             onClick={handlePopperClick}
             bgcolor={"#E8E8E8"}
+            justifyContent={"center"}
+            alignItems={"center"}
+            display={"flex"}
+            flex={1}
+            maxHeight={56}
+            sx={{
+              "&:hover": {
+                cursor: "pointer",
+                backgroundColor: "#e6e3e3",
+              },
+            }}
             borderRadius={1}
-            height={"64px"}
+            // height={"56px"}
           >
             {hasReturnTrip ? (
               <Stack
@@ -120,7 +131,6 @@ const DateBox = ({
                 flexDirection={"column"}
                 justifyContent={"space-between"}
                 alignItems={"center"}
-                p={2}
               >
                 {headerText("Departure")}
                 {departureReturnDate.departure ? (
@@ -134,7 +144,6 @@ const DateBox = ({
                   </Typography>
                 ) : (
                   ""
-                  // <CalendarTodayOutlinedIcon sx={{ color: "#687e94" }} />
                 )}
               </Stack>
             )}
@@ -160,19 +169,16 @@ const DateBox = ({
             )}
           </Popper>
 
-          <Box minHeight={"24px"}>
-            {/* minHeight is to evade moving of the box when there is an error  */}
-            {errorObject.departure && (
-              <Typography
-                ml={"14px"}
-                mt={"3px"}
-                variant="caption"
-                color={"#d32f2f"}
-              >
-                Select flight date
-              </Typography>
-            )}
-          </Box>
+          {(errorObject.departure || errorObject.return) && (
+            <Typography
+              mt={"3px"}
+              ml={"14px"}
+              variant="caption"
+              color={"#d32f2f"}
+            >
+              Select flight date
+            </Typography>
+          )}
         </Box>
       </ClickAwayListener>
     </Stack>

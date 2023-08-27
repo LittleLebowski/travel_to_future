@@ -1,7 +1,7 @@
 //React
 import React, { useCallback, useMemo, useState } from "react";
 //MUI
-import { Box, Stack, Typography, useTheme } from "@mui/material";
+import { Box, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 //Third-Party
 import _ from "lodash";
 //Components
@@ -10,6 +10,8 @@ import CustomButton from "../components/CustomButton";
 //Icons
 import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
+
+import { SMALL_SCREEN_SIZE } from "../enums/screenSizing";
 
 const FlightList = ({
   flightOptions,
@@ -22,6 +24,9 @@ const FlightList = ({
   });
 
   const theme = useTheme();
+  const isSmallScreen = useMediaQuery(
+    theme.breakpoints.down(SMALL_SCREEN_SIZE)
+  );
 
   const buttonIconSelector = useCallback((isAscending) => {
     return isAscending ? (
@@ -106,7 +111,7 @@ const FlightList = ({
       <Stack
         gap={3}
         py={2}
-        px={4}
+        px={isSmallScreen ? 2 : 4}
         borderRadius={theme.spacing(0, 0, 1.3, 1.3)}
         border={6}
         borderTop={0}

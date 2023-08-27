@@ -23,6 +23,7 @@ const LocationAutocomplite = ({
       onChange={(_e, v) => handleFunction(v)}
       loading={dataLoading}
       loadingText={waitingText}
+      fullWidth
       renderInput={(params) => (
         <TextField
           variant="filled"
